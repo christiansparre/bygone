@@ -5,12 +5,12 @@ using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests
 {
-    public abstract class EventStreamTestBase : IDisposable, IClassFixture<TestConfiguration>
+    public abstract class EventStoreTestBase : IDisposable, IClassFixture<TestConfiguration>
     {
         public ITestOutputHelper TestOutputHelper { get; }
         public TestConfiguration Config { get; }
 
-        protected EventStreamTestBase(ITestOutputHelper testOutputHelper, TestConfiguration config)
+        protected EventStoreTestBase(ITestOutputHelper testOutputHelper, TestConfiguration config)
         {
             TestOutputHelper = testOutputHelper;
             Config = config;
@@ -20,7 +20,7 @@ namespace Bygone.PersistenceTests
 
         public ProtoBufEventSerializer Serializer { get; }
 
-        public abstract EventStream Subject { get; }
+        public abstract EventStore Subject { get; }
         protected abstract void OnDispose();
 
         public void Dispose()

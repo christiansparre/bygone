@@ -5,18 +5,16 @@ using Bygone.Serialization;
 
 namespace Bygone
 {
-    public abstract class EventStream : IEventStream
+    public abstract class EventStore : IEventStore
     {
         private readonly EventSerializer _serializer;
-        public string Stream { get; }
 
-        protected EventStream(string stream, EventSerializer serializer)
+        protected EventStore(EventSerializer serializer)
         {
             _serializer = serializer;
-            Stream = stream;
         }
-        
-        public async Task Append(params EventData[] events)
+
+        public async Task Append(string stream, params EventData[] events)
         {
             var serializedEvents = new SerializedEvent[events.Length];
 
@@ -32,21 +30,21 @@ namespace Bygone
 
                 serializedEvents[i] = new SerializedEvent(
                     eventData.EventNumber,
-                    eventData.Timestamp,
+                    eventData.Timestamp.Ticks,
                     eventType,
                     _serializer.SerializeEvent(eventData.Event),
                     eventData.Metadata == null ? new byte[0] : _serializer.SerializeMetadata(eventData.Metadata));
             }
 
-            await WriteEvents(serializedEvents);
+            await WriteEvents(stream, serializedEvents);
         }
 
         /// <summary>
         /// Reads the events from the first event number provided to the last event number provided
         /// </summary>
-        public async Task<EventData[]> Read(int firstEventNumber = 1, int lastEventNumber = int.MaxValue)
+        public async Task<EventData[]> Read(string stream, int firstEventNumber = 1, int lastEventNumber = int.MaxValue)
         {
-            var serializedEvents = await ReadEvents(firstEventNumber, lastEventNumber);
+            var serializedEvents = await ReadEvents(stream, firstEventNumber, lastEventNumber);
 
             var events = new EventData[serializedEvents.Length];
 
@@ -62,7 +60,7 @@ namespace Bygone
 
                 events[i] = new EventData(
                     r.EventNumber,
-                    r.Timestamp,
+                    new DateTime(r.TimestampTicks, DateTimeKind.Utc),
                     _serializer.DeserializeEvent(eventType, r.Event),
                    r.Metadata.Length == 0 ? null : _serializer.DeserializeMetadata(r.Metadata));
 
@@ -71,13 +69,33 @@ namespace Bygone
             return events;
         }
 
-        public Task<int> Delete()
+        public Task<int> Delete(string stream)
         {
-            return DeleteStream();
+            return DeleteStream(stream);
         }
 
-        protected abstract Task WriteEvents(SerializedEvent[] events);
-        protected abstract Task<SerializedEvent[]> ReadEvents(int firstEventNumber, int lastEventNumber);
-        protected abstract Task<int> DeleteStream();
+        public Task<int> Count(string stream)
+        {
+            return CountEvents(stream);
+        }
+
+        public async Task<StreamInfo[]> List()
+        {
+            return (await ListStreams())
+                .Select(s => new StreamInfo(s.Stream, new DateTime(s.CreatedTicks, DateTimeKind.Utc)))
+                .ToArray();
+        }
+
+        public Task<int> HighestEventNumber(string stream)
+        {
+            return GetHighestEventNumber(stream);
+        }
+
+        protected abstract Task WriteEvents(string stream, SerializedEvent[] events);
+        protected abstract Task<SerializedEvent[]> ReadEvents(string stream, int firstEventNumber, int lastEventNumber);
+        protected abstract Task<int> DeleteStream(string stream);
+        protected abstract Task<SerializedStreamInfo[]> ListStreams();
+        protected abstract Task<int> CountEvents(string stream);
+        protected abstract Task<int> GetHighestEventNumber(string stream);
     }
 }

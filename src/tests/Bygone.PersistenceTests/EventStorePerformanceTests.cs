@@ -7,11 +7,14 @@ using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests
 {
-    public abstract class EventStreamPerformanceTests : EventStreamTestBase
+    public abstract class EventStorePerformanceTests : EventStoreTestBase
     {
-        protected EventStreamPerformanceTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
+        protected EventStorePerformanceTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
+            Stream = Guid.NewGuid().ToString();
         }
+
+        protected string Stream { get; }
 
         [Theory]
         [InlineData(10)]
@@ -23,14 +26,14 @@ namespace Bygone.PersistenceTests
 
             for (int i = 0; i < count; i++)
             {
-                await Subject.Append(new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
+                await Subject.Append(Stream, new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
             }
 
             TestOutputHelper.WriteLine($"Completed appending {count} test events");
             TestOutputHelper.WriteLine($"Reading all {count} test events from event stream");
 
             var timer = Stopwatch.StartNew();
-            var events = await Subject.Read();
+            var events = await Subject.Read(Stream);
             timer.Stop();
 
             TestOutputHelper.WriteLine("Finished reading all test events from event stream");
@@ -50,14 +53,14 @@ namespace Bygone.PersistenceTests
 
             for (int i = 0; i < count; i++)
             {
-                await Subject.Append(new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
+                await Subject.Append(Stream, new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
             }
 
             TestOutputHelper.WriteLine($"Completed appending {count} test events");
             TestOutputHelper.WriteLine($"Deleting all {count} test events from event stream");
 
             var timer = Stopwatch.StartNew();
-            var events = await Subject.Delete();
+            var events = await Subject.Delete(Stream);
             timer.Stop();
 
             TestOutputHelper.WriteLine("Finished deleting all test events from event stream");
@@ -73,13 +76,13 @@ namespace Bygone.PersistenceTests
         [InlineData(1000)]
         public async Task append_performance(int count)
         {
-            var warmup = await Subject.Read();
+            var warmup = await Subject.Read(Stream);
 
             TestOutputHelper.WriteLine($"Appending {count} test events");
             var timer = Stopwatch.StartNew();
             for (int i = 0; i < count; i++)
             {
-                await Subject.Append(new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
+                await Subject.Append(Stream, new EventData(i + 1, DateTime.UtcNow, new SomethingHappened { What = "Stuff" }, new Dictionary<string, string> { ["Hest"] = "Test" }));
             }
             timer.Stop();
 

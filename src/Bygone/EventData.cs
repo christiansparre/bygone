@@ -7,6 +7,11 @@ namespace Bygone
     {
         public EventData(int eventNumber, DateTime timestamp, object @event, Dictionary<string, string> metadata = null)
         {
+            if (timestamp.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Timestamp must be provided in UTC");
+            }
+
             EventNumber = eventNumber;
             Timestamp = timestamp;
             Event = @event;

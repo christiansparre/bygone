@@ -1,20 +1,18 @@
-﻿using System;
-
-namespace Bygone
+﻿namespace Bygone
 {
     public class SerializedEvent
     {
-        public SerializedEvent(int eventNumber, DateTime timestamp, string eventType, byte[] @event, byte[] metadata)
+        public SerializedEvent(int eventNumber, long timestampTicks, string eventType, byte[] @event, byte[] metadata)
         {
             EventNumber = eventNumber;
-            Timestamp = timestamp;
+            TimestampTicks = timestampTicks;
             EventType = eventType;
             Event = @event;
             Metadata = metadata;
         }
 
         public int EventNumber { get; }
-        public DateTime Timestamp { get; }
+        public long TimestampTicks { get; }
         public string EventType { get; }
         public byte[] Event { get; }
         public byte[] Metadata { get; }
