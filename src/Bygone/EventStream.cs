@@ -38,7 +38,7 @@ namespace Bygone
                     eventData.Metadata == null ? new byte[0] : _serializer.SerializeMetadata(eventData.Metadata));
             }
 
-            await WriteEvents(serializedEvents.ToArray());
+            await WriteEvents(serializedEvents);
         }
 
         /// <summary>
