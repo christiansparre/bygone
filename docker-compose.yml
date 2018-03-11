@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  bygone.persistencetests:
+    image: bygonepersistencetests
+    build:
+      context: .
+      dockerfile: src/tests/Bygone.PersistenceTests/Dockerfile
+    entrypoint: bash /app/wait_for_it.sh sqlserver:1433 -t 0 -- dotnet test
+    environment:
+      - SqlServer__ConnectionString=Server=sqlserver;Database=Bygone_Tests;User Id=sa;Password=P@ssw0rd;
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    image: microsoft/mssql-server-linux:2017-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=P@ssw0rd
+      - MSSQL_PID=Express 
+    ports:
+      - "1433"
+    logging:
+      driver: "none"

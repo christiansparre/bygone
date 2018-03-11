@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Bygone</id>
+    <version>$version$</version>
+    <authors>Christian Sparre</authors>
+    <owners>Christian Sparre</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/christiansparre/bygone/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/christiansparre/bygone</projectUrl>
+    <description>Yet another event store library</description>
+    <copyright>See https://github.com/christiansparre/bygone</copyright>
+    <repository type="git" url="https://github.com/christiansparre/bygone" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\netstandard1.0\Bygone.dll" target="lib\netstandard1.0" />
+  </files>
+</package>

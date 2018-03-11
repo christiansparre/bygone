@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Bygone.SqlServer</id>
+    <version>$version$</version>
+    <authors>Christian Sparre</authors>
+    <owners>Christian Sparre</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/christiansparre/bygone/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/christiansparre/bygone</projectUrl>
+    <description>SQL Server persistence for Bygone</description>
+    <copyright>See https://github.com/christiansparre/bygone</copyright>
+    <repository type="git" url="https://github.com/christiansparre/bygone" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.2">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="Bygone" version="$version$" exclude="Build,Analyzers" />
+        <dependency id="System.Data.SqlClient" version="4.4.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\$configuration$\netstandard1.2\Bygone.SqlServer.dll" target="lib\netstandard1.2" />
+  </files>
+</package>
