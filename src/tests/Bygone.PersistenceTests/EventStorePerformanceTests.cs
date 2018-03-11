@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -93,5 +94,26 @@ namespace Bygone.PersistenceTests
             TestOutputHelper.WriteLine($"  Throughput: {throughput:N0} events/s");
         }
 
+        [Theory]
+        [InlineData(10)]
+        [InlineData(50)]
+        [InlineData(100)]
+        public async Task list_performance(int streamCount)
+        {
+            for (int i = 0; i < streamCount; i++)
+            {
+                await Subject.Append(Guid.NewGuid().ToString(), Enumerable.Range(1, 100).Select(s => new EventData(s, DateTime.UtcNow, new SomethingHappened { What = "Hest" })).ToArray());
+            }
+
+            var timer = Stopwatch.StartNew();
+            var streams = await Subject.List();
+            timer.Stop();
+
+            TestOutputHelper.WriteLine($"Completed appending {streamCount * 100} test events");
+            TestOutputHelper.WriteLine($"  Total elapsed time: {timer.Elapsed}, ({timer.Elapsed.TotalSeconds:N2} seconds)");
+
+            var throughput = streamCount / (decimal)timer.Elapsed.TotalSeconds;
+            TestOutputHelper.WriteLine($"  Throughput: {throughput:N0} stream/s");
+        }
     }
 }
