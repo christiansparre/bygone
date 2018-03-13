@@ -74,28 +74,8 @@ namespace Bygone
             return DeleteStream(stream);
         }
 
-        public Task<int> Count(string stream)
-        {
-            return CountEvents(stream);
-        }
-
-        public async Task<StreamInfo[]> List()
-        {
-            return (await ListStreams())
-                .Select(s => new StreamInfo(s.Stream, new DateTime(s.CreatedTicks, DateTimeKind.Utc)))
-                .ToArray();
-        }
-
-        public Task<int> HighestEventNumber(string stream)
-        {
-            return GetHighestEventNumber(stream);
-        }
-
         protected abstract Task WriteEvents(string stream, SerializedEvent[] events);
         protected abstract Task<SerializedEvent[]> ReadEvents(string stream, int firstEventNumber, int lastEventNumber);
         protected abstract Task<int> DeleteStream(string stream);
-        protected abstract Task<SerializedStreamInfo[]> ListStreams();
-        protected abstract Task<int> CountEvents(string stream);
-        protected abstract Task<int> GetHighestEventNumber(string stream);
     }
 }

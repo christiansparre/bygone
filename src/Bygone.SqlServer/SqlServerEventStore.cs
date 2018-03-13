@@ -142,57 +142,5 @@ namespace Bygone.SqlServer
                 return await cmd.ExecuteNonQueryAsync();
             }
         }
-
-        protected override async Task<SerializedStreamInfo[]> ListStreams()
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                await conn.OpenAsync();
-
-                var cmd = conn.CreateCommand();
-                cmd.CommandText = $"SELECT Stream, Timestamp AS Created FROM [{_eventsTableName}] WHERE EventNumber = 1 ORDER BY Created";
-                
-                var reader = await cmd.ExecuteReaderAsync();
-
-                var infos = new List<SerializedStreamInfo>();
-
-                while (reader.Read())
-                {
-                    infos.Add(new SerializedStreamInfo(
-                        (string)reader["Stream"],
-                        (long)reader["Created"]));
-                }
-
-                return infos.ToArray();
-            }
-        }
-
-        protected override async Task<int> CountEvents(string stream)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                await conn.OpenAsync();
-
-                var cmd = conn.CreateCommand();
-                cmd.CommandText = $"SELECT COUNT(*) FROM [{_eventsTableName}] WHERE Stream = @Stream";
-                cmd.Parameters.Add(new SqlParameter("Stream", stream));
-
-                return (int)await cmd.ExecuteScalarAsync();
-            }
-        }
-
-        protected override async Task<int> GetHighestEventNumber(string stream)
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                await conn.OpenAsync();
-
-                var cmd = conn.CreateCommand();
-                cmd.CommandText = $"SELECT TOP 1 EventNumber FROM [{_eventsTableName}] WHERE Stream = @Stream ORDER BY EventNumber DESC";
-                cmd.Parameters.Add(new SqlParameter("Stream", stream));
-
-                return (int)await cmd.ExecuteScalarAsync();
-            }
-        }
     }
 }

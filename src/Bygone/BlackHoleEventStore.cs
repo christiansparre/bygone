@@ -26,20 +26,5 @@ namespace Bygone
         {
             return Task.FromResult(0);
         }
-
-        protected override Task<SerializedStreamInfo[]> ListStreams()
-        {
-            return Task.FromResult(new SerializedStreamInfo[0]);
-        }
-
-        protected override Task<int> CountEvents(string stream)
-        {
-            return Task.FromResult(0);
-        }
-
-        protected override Task<int> GetHighestEventNumber(string stream)
-        {
-            return Task.FromResult(0);
-        }
     }
 }

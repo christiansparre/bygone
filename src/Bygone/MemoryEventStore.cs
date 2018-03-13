@@ -72,40 +72,5 @@ namespace Bygone
 ;
             return Task.FromResult(eventsCount);
         }
-
-        protected override Task<SerializedStreamInfo[]> ListStreams()
-        {
-            var infos = new List<SerializedStreamInfo>();
-
-            foreach (var stream in _streams)
-            {
-                if (stream.Value != null && stream.Value.Count > 0)
-                {
-                    infos.Add(new SerializedStreamInfo(stream.Key, stream.Value[1].TimestampTicks));
-                }
-            }
-
-            return Task.FromResult(infos.ToArray());
-        }
-
-        protected override Task<int> CountEvents(string stream)
-        {
-            if (_streams.TryGetValue(stream, out var sd))
-            {
-                return Task.FromResult(sd.Count);
-            }
-
-            return Task.FromResult(0);
-        }
-
-        protected override Task<int> GetHighestEventNumber(string stream)
-        {
-            if (_streams.TryGetValue(stream, out var sd))
-            {
-                return Task.FromResult(sd.Values.Last().EventNumber);
-            }
-
-            return Task.FromResult(0);
-        }
     }
 }

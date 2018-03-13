@@ -18,16 +18,5 @@ namespace Bygone
         /// Deletes all events from the stream
         /// </summary>
         Task<int> Delete(string stream);
-
-        /// <summary>
-        /// Gets the number of events in the stream
-        /// </summary>
-        Task<int> Count(string stream);
-
-        /// <summary>
-        /// Lists all the stream in the store
-        /// </summary>
-        /// <returns></returns>
-        Task<StreamInfo[]> List();
     }
 }
