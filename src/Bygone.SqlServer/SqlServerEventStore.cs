@@ -7,12 +7,13 @@ using Bygone.Serialization;
 
 namespace Bygone.SqlServer
 {
-    public class SqlServerEventStore : EventStore
+    public class SqlServerEventStorePersistence : IEventStorePersistence
     {
         private readonly string _connectionString;
         private readonly string _eventsTableName;
 
-        public SqlServerEventStore(string connectionString, EventSerializer serializer, bool ensureSchema = false, string eventsTableName = "Events") : base(serializer)
+
+        public SqlServerEventStorePersistence(string connectionString, bool ensureSchema = false, string eventsTableName = "Events")
         {
             _connectionString = connectionString;
             _eventsTableName = eventsTableName;
@@ -40,7 +41,13 @@ namespace Bygone.SqlServer
 			                                    [EventNumber] ASC,
 			                                    [Stream] ASC
 		                                    )
-	                                    END";
+	                                    END
+
+                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_EventNumber_Including_Timestamp')
+	                                    BEGIN
+                                            CREATE NONCLUSTERED INDEX [IX_{eventsTableName}_EventNumber_Including_Stream,Timestamp] ON [dbo].[{eventsTableName}] ([EventNumber] ASC) INCLUDE ([Stream], [Timestamp])                                                                               
+	                                    END
+                                    ";
 
                 using (var conn = new SqlConnection(_connectionString))
                 {
@@ -52,7 +59,7 @@ namespace Bygone.SqlServer
             }
         }
 
-        protected override async Task WriteEvents(string stream, SerializedEvent[] events)
+        public async Task Append(string stream, SerializedEvent[] events)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -99,7 +106,7 @@ namespace Bygone.SqlServer
             }
         }
 
-        protected override async Task<SerializedEvent[]> ReadEvents(string stream, int firstEventNumber, int lastEventNumber)
+        public async Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -129,7 +136,7 @@ namespace Bygone.SqlServer
             }
         }
 
-        protected override async Task<int> DeleteStream(string stream)
+        public async Task<int> Delete(string stream)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -140,6 +147,34 @@ namespace Bygone.SqlServer
                 cmd.Parameters.Add(new SqlParameter("Stream", stream));
 
                 return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public async Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        {
+            var orderBy = ascendingByTimestamp ? "ASC" : "DESC";
+
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+
+                var cmd = conn.CreateCommand();
+                cmd.CommandText = $"SELECT Stream, Timestamp FROM [{_eventsTableName}] WHERE EventNumber = 1 ORDER BY Timestamp {orderBy} OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
+                cmd.Parameters.Add(new SqlParameter("Skip", skip));
+                cmd.Parameters.Add(new SqlParameter("Take", take));
+
+                var reader = await cmd.ExecuteReaderAsync();
+
+                var events = new List<SerializedStreamInfo>();
+
+                while (reader.Read())
+                {
+                    events.Add(new SerializedStreamInfo(
+                        (string)reader["Stream"],
+                        (long)reader["Timestamp"]));
+                }
+
+                return events.ToArray();
             }
         }
     }

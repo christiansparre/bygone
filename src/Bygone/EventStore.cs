@@ -5,13 +5,23 @@ using Bygone.Serialization;
 
 namespace Bygone
 {
-    public abstract class EventStore : IEventStore
+    public interface IEventStorePersistence
+    {
+        Task Append(string stream, SerializedEvent[] events);
+        Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber);
+        Task<int> Delete(string stream);
+        Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true);
+    }
+
+    public class EventStore : IEventStore
     {
         private readonly EventSerializer _serializer;
+        private readonly IEventStorePersistence _persistence;
 
-        protected EventStore(EventSerializer serializer)
+        public EventStore(EventSerializer serializer, IEventStorePersistence persistence)
         {
             _serializer = serializer;
+            _persistence = persistence;
         }
 
         public async Task Append(string stream, params EventData[] events)
@@ -36,7 +46,7 @@ namespace Bygone
                     eventData.Metadata == null ? new byte[0] : _serializer.SerializeMetadata(eventData.Metadata));
             }
 
-            await WriteEvents(stream, serializedEvents);
+            await _persistence.Append(stream, serializedEvents);
         }
 
         /// <summary>
@@ -44,7 +54,7 @@ namespace Bygone
         /// </summary>
         public async Task<EventData[]> Read(string stream, int firstEventNumber = 1, int lastEventNumber = int.MaxValue)
         {
-            var serializedEvents = await ReadEvents(stream, firstEventNumber, lastEventNumber);
+            var serializedEvents = await _persistence.Read(stream, firstEventNumber, lastEventNumber);
 
             var events = new EventData[serializedEvents.Length];
 
@@ -71,11 +81,14 @@ namespace Bygone
 
         public Task<int> Delete(string stream)
         {
-            return DeleteStream(stream);
+            return _persistence.Delete(stream);
         }
 
-        protected abstract Task WriteEvents(string stream, SerializedEvent[] events);
-        protected abstract Task<SerializedEvent[]> ReadEvents(string stream, int firstEventNumber, int lastEventNumber);
-        protected abstract Task<int> DeleteStream(string stream);
+        public async Task<StreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        {
+            return (await _persistence.List(skip, take, ascendingByTimestamp))
+                .Select(s => new StreamInfo(s.Stream, new DateTime(s.CreatedTicks, DateTimeKind.Utc)))
+                .ToArray();
+        }
     }
 }

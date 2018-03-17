@@ -2,9 +2,9 @@
 
 namespace Bygone.PersistenceTests.Memory
 {
-    public class MemoryEventStorePerformanceTests : EventStorePerformanceTests
+    public class MemoryEventStoreListStreamsTests : EventStoreListStreamsTests
     {
-        public MemoryEventStorePerformanceTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
+        public MemoryEventStoreListStreamsTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
             Subject = new EventStore(Serializer, new MemoryEventStorePersistence());
         }

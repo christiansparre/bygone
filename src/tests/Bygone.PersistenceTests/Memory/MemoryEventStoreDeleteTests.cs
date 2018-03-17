@@ -6,7 +6,7 @@ namespace Bygone.PersistenceTests.Memory
     {
         public MemoryEventStoreDeleteTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
-            Subject = new MemoryEventStore(Serializer);
+            Subject = new EventStore(Serializer, new MemoryEventStorePersistence());
         }
 
         public override EventStore Subject { get; }

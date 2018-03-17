@@ -18,5 +18,10 @@ namespace Bygone
         /// Deletes all events from the stream
         /// </summary>
         Task<int> Delete(string stream);
+
+        /// <summary>
+        /// Lists all streams in the event store
+        /// </summary>
+        Task<StreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true);
     }
 }

@@ -12,7 +12,7 @@ namespace Bygone.PersistenceTests.SqlServer
         public SqlServerEventStoreReadTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
             _tableName = Guid.NewGuid().ToString();
-            Subject = new SqlServerEventStore(config.Configuration["SqlServer:ConnectionString"], Serializer, true, _tableName);
+            Subject = new EventStore(Serializer, new SqlServerEventStorePersistence(config.Configuration["SqlServer:ConnectionString"], true, _tableName));
         }
 
         public override EventStore Subject { get; }

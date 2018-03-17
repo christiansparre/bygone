@@ -5,11 +5,11 @@ using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests.SqlServer
 {
-    public class SqlServerEventStorePerformanceTests : EventStorePerformanceTests
+    public class SqlServerEventStoreListStreamsTests : EventStoreListStreamsTests
     {
         private string _tableName;
 
-        public SqlServerEventStorePerformanceTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
+        public SqlServerEventStoreListStreamsTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
             _tableName = Guid.NewGuid().ToString();
             Subject = new EventStore(Serializer, new SqlServerEventStorePersistence(config.Configuration["SqlServer:ConnectionString"], true, _tableName));
