@@ -7,11 +7,6 @@ using Bygone.Serialization;
 
 namespace Bygone.SqlServer
 {
-    public interface ISqlServerEventStorePersistence : IEventStorePersistence
-    {
-        Task<SqlServerStreamInfo[]> ListExtra(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true);
-    }
-
     public class SqlServerEventStorePersistence : ISqlServerEventStorePersistence
     {
         private readonly string _connectionString;
@@ -190,7 +185,7 @@ namespace Bygone.SqlServer
             }
         }
 
-        public async Task<SqlServerStreamInfo[]> ListExtra(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true)
+        public async Task<SqlServerStreamInfo[]> ListExtra(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
         {
             var orderBy = ascendingByTimestamp ? "ASC" : "DESC";
 
