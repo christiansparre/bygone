@@ -76,9 +76,9 @@ namespace Bygone
             return _persistence.Delete(stream);
         }
 
-        public async Task<StreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        public async Task<StreamInfo[]> List(int skip = 0, int take = 1000, DateTime createdOnOrAfter = default(DateTime), bool ascendingByTimestamp = true)
         {
-            return (await _persistence.List(skip, take, ascendingByTimestamp))
+            return (await _persistence.List(skip, take, createdOnOrAfter.ToUniversalTime().Ticks, ascendingByTimestamp))
                 .Select(s => new StreamInfo(s.Stream, new DateTime(s.CreatedTicks, DateTimeKind.Utc)))
                 .ToArray();
         }

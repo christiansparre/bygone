@@ -150,7 +150,7 @@ namespace Bygone.SqlServer
             }
         }
 
-        public async Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        public async Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true)
         {
             var orderBy = ascendingByTimestamp ? "ASC" : "DESC";
 
@@ -159,9 +159,10 @@ namespace Bygone.SqlServer
                 await conn.OpenAsync();
 
                 var cmd = conn.CreateCommand();
-                cmd.CommandText = $"SELECT Stream, Timestamp FROM [{_eventsTableName}] WHERE EventNumber = 1 ORDER BY Timestamp {orderBy} OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
+                cmd.CommandText = $"SELECT Stream, Timestamp FROM [{_eventsTableName}] WHERE EventNumber = 1 AND Timestamp >= @CreatedOnOrAfter ORDER BY Timestamp {orderBy} OFFSET @Skip ROWS FETCH NEXT @Take ROWS ONLY";
                 cmd.Parameters.Add(new SqlParameter("Skip", skip));
                 cmd.Parameters.Add(new SqlParameter("Take", take));
+                cmd.Parameters.Add(new SqlParameter("CreatedOnOrAfter", createdOnOrAfterTimestampTicks));
 
                 var reader = await cmd.ExecuteReaderAsync();
 

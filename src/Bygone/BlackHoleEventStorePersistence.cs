@@ -20,9 +20,9 @@ namespace Bygone
             return Task.FromResult(0);
         }
 
-        public Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        public Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true)
         {
-            throw new System.NotImplementedException();
+            return Task.FromResult(new SerializedStreamInfo[0]);
         }
     }
 }

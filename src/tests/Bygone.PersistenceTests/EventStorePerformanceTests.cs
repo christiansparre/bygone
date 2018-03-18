@@ -117,7 +117,7 @@ namespace Bygone.PersistenceTests
             TestOutputHelper.WriteLine($"Listing streams. Skip={skip}, Take={take}, Order={(ascending ? "ASC" : "DESC")}");
 
             var timer = Stopwatch.StartNew();
-            var streamInfos = await Subject.List(skip, take, @ascending);
+            var streamInfos = await Subject.List(skip, take, ascendingByTimestamp: ascending);
             timer.Stop();
             var throughput = streamInfos.Length / (decimal)timer.Elapsed.TotalSeconds;
 

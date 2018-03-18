@@ -68,9 +68,9 @@ namespace Bygone
             return Task.FromResult(eventsCount);
         }
 
-        public Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true)
+        public Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true)
         {
-            var events = _streams.Select(s => new { stream = s.Key, @event = s.Value[1] });
+            var events = _streams.Select(s => new { stream = s.Key, @event = s.Value[1] }).Where(a => a.@event.TimestampTicks >= createdOnOrAfterTimestampTicks);
 
             events = ascendingByTimestamp ? events.OrderBy(o => o.@event.TimestampTicks) : events.OrderByDescending(o => o.@event.TimestampTicks);
 

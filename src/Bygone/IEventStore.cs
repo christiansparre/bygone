@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Bygone
 {
@@ -22,6 +23,6 @@ namespace Bygone
         /// <summary>
         /// Lists all streams in the event store
         /// </summary>
-        Task<StreamInfo[]> List(int skip = 0, int take = 1000, bool ascendingByTimestamp = true);
+        Task<StreamInfo[]> List(int skip = 0, int take = 1000, DateTime createdOnOrAfter = default(DateTime), bool ascendingByTimestamp = true);
     }
 }

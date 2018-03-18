@@ -89,7 +89,7 @@ namespace Bygone.PersistenceTests
                 await Task.Delay(1);
             }
 
-            var list = await Subject.List(10, 50, false);
+            var list = await Subject.List(10, 50, ascendingByTimestamp: false);
 
             Assert.Equal(50, list.Length);
 
@@ -99,6 +99,22 @@ namespace Bygone.PersistenceTests
                 Assert.Equal(s.ToString(), streamInfo.Stream);
                 s--;
             }
+        }
+
+        [Fact]
+        public async Task should_list_streams_created_onorafter()
+        {
+            var dt = new DateTime(0, DateTimeKind.Utc);
+
+            for (int i = 0; i < 10; i++)
+            {
+                await Subject.Append(i.ToString(), new EventData(1, dt.AddYears(i), new SomethingHappened { What = "Test" }));
+            }
+
+            var list = await Subject.List(createdOnOrAfter: dt.AddYears(4));
+
+            Assert.Equal(6, list.Length);
+            Assert.Equal("4", list[0].Stream);
         }
     }
 }
