@@ -43,7 +43,7 @@ namespace Bygone.SqlServer
 		                                    )
 	                                    END
 
-                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_EventNumber_Including_Timestamp')
+                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_EventNumber_Including_Stream,Timestamp')
 	                                    BEGIN
                                             CREATE NONCLUSTERED INDEX [IX_{eventsTableName}_EventNumber_Including_Stream,Timestamp] ON [dbo].[{eventsTableName}] ([EventNumber] ASC) INCLUDE ([Stream], [Timestamp])                                                                               
 	                                    END
