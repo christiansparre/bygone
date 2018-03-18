@@ -34,12 +34,13 @@ namespace Bygone.SqlServer
 		                                        CONSTRAINT [PK_{eventsTableName}] PRIMARY KEY CLUSTERED ([Id] ASC))
 	                                    END
 
-                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_Stream_EventNumber')
+                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'UIX_{eventsTableName}_Stream_EventNumber')
 	                                    BEGIN
-		                                    CREATE UNIQUE NONCLUSTERED INDEX [IX_{eventsTableName}_Stream_EventNumber] ON [dbo].[{eventsTableName}]
+		                                    CREATE UNIQUE NONCLUSTERED INDEX [UIX_{eventsTableName}_Stream_EventNumber] ON [dbo].[{eventsTableName}]
 		                                    (
-			                                    [EventNumber] ASC,
-			                                    [Stream] ASC
+                                                [Stream] ASC,
+			                                    [EventNumber] ASC
+			                                    
 		                                    )
 	                                    END
 
