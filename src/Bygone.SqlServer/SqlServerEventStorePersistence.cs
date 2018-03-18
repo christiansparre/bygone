@@ -7,7 +7,12 @@ using Bygone.Serialization;
 
 namespace Bygone.SqlServer
 {
-    public class SqlServerEventStorePersistence : IEventStorePersistence
+    public interface ISqlServerEventStorePersistence : IEventStorePersistence
+    {
+        Task<SqlServerStreamInfo[]> ListExtra(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true);
+    }
+
+    public class SqlServerEventStorePersistence : ISqlServerEventStorePersistence
     {
         private readonly string _connectionString;
         private readonly string _eventsTableName;
@@ -47,7 +52,12 @@ namespace Bygone.SqlServer
                                     IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_EventNumber_Including_Stream,Timestamp')
 	                                    BEGIN
                                             CREATE NONCLUSTERED INDEX [IX_{eventsTableName}_EventNumber_Including_Stream,Timestamp] ON [dbo].[{eventsTableName}] ([EventNumber] ASC) INCLUDE ([Stream], [Timestamp])                                                                               
-	                                    END
+	                                    END  
+
+                                    IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_{eventsTableName}_Stream_Including_EventNumber,Timestamp')
+	                                    BEGIN
+                                            CREATE NONCLUSTERED INDEX [IX_{eventsTableName}_Stream_Including_EventNumber,Timestamp] ON [dbo].[{eventsTableName}] ([Stream] ASC) INCLUDE ([EventNumber],[Timestamp])
+                                        END
                                     ";
 
                 using (var conn = new SqlConnection(_connectionString))
@@ -174,6 +184,43 @@ namespace Bygone.SqlServer
                     events.Add(new SerializedStreamInfo(
                         (string)reader["Stream"],
                         (long)reader["Timestamp"]));
+                }
+
+                return events.ToArray();
+            }
+        }
+
+        public async Task<SqlServerStreamInfo[]> ListExtra(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0, bool ascendingByTimestamp = true)
+        {
+            var orderBy = ascendingByTimestamp ? "ASC" : "DESC";
+
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                await conn.OpenAsync();
+
+                var cmd = conn.CreateCommand();
+                cmd.CommandText = $@"SELECT Stream, MIN(Timestamp) AS MinTimestamp, MAX(Timestamp) AS MaxTimestamp, MIN(EventNumber) MinEventNumber, MAX(EventNumber) MaxEventNumber 
+                                        FROM [{_eventsTableName}]
+                                        GROUP BY Stream
+                                        ORDER BY MinTimestamp {orderBy}
+                                        OFFSET @Skip ROWS
+                                        FETCH NEXT @Take ROWS ONLY";
+
+                cmd.Parameters.Add(new SqlParameter("Skip", skip));
+                cmd.Parameters.Add(new SqlParameter("Take", take));
+
+                var reader = await cmd.ExecuteReaderAsync();
+
+                var events = new List<SqlServerStreamInfo>();
+
+                while (reader.Read())
+                {
+                    events.Add(new SqlServerStreamInfo(
+                        (string)reader["Stream"],
+                        (long)reader["MinTimestamp"],
+                        (long)reader["MaxTimestamp"],
+                        (int)reader["MinEventNumber"],
+                        (int)reader["MaxEventNumber"]));
                 }
 
                 return events.ToArray();

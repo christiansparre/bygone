@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
 using Bygone.SqlServer;
+using ProtoBuf;
 using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests.SqlServer
@@ -16,6 +17,7 @@ namespace Bygone.PersistenceTests.SqlServer
         }
 
         public override EventStore Subject { get; }
+
         protected override void OnDispose()
         {
             using (var conn = new SqlConnection(Config.Configuration["SqlServer:ConnectionString"]))
@@ -27,5 +29,6 @@ namespace Bygone.PersistenceTests.SqlServer
                 cmd.ExecuteNonQuery();
             }
         }
+
     }
 }
