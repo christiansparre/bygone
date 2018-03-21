@@ -6,7 +6,7 @@
     <authors>Christian Sparre</authors>
     <owners>Christian Sparre</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://github.com/christiansparre/bygone/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/christiansparre/bygone/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/christiansparre/bygone</projectUrl>
     <description>Yet another event store library</description>
     <copyright>See https://github.com/christiansparre/bygone</copyright>
