@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Data.SqlClient;
 using Bygone.SqlServer;
-using ProtoBuf;
 using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests.SqlServer
 {
     public class SqlServerEventStoreListStreamsTests : EventStoreListStreamsTests
     {
-        private string _tableName;
+        private readonly string _tableName;
 
         public SqlServerEventStoreListStreamsTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {

@@ -7,7 +7,7 @@ namespace Bygone.PersistenceTests.SqlServer
 {
     public class SqlServerEventStoreReadTests : EventStoreReadTests
     {
-        private string _tableName;
+        private readonly string _tableName;
 
         public SqlServerEventStoreReadTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {

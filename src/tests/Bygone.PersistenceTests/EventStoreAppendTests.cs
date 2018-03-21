@@ -8,7 +8,6 @@ namespace Bygone.PersistenceTests
 {
     public abstract class EventStoreAppendTests : EventStoreTestBase
     {
-
         protected EventStoreAppendTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
             Stream = Guid.NewGuid().ToString();

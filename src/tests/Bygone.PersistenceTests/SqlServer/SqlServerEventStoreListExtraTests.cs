@@ -5,20 +5,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bygone.SqlServer;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests.SqlServer
 {
     public class SqlServerEventStoreListExtraTests : IDisposable, IClassFixture<TestConfiguration>
     {
-        private readonly ITestOutputHelper _testOutputHelper;
         private readonly TestConfiguration _config;
-        private string _tableName;
-        private SqlServerEventStorePersistence _subject;
+        private readonly string _tableName;
+        private readonly SqlServerEventStorePersistence _subject;
 
-        public SqlServerEventStoreListExtraTests(ITestOutputHelper testOutputHelper, TestConfiguration config)
+        public SqlServerEventStoreListExtraTests(TestConfiguration config)
         {
-            _testOutputHelper = testOutputHelper;
             _config = config;
             _tableName = Guid.NewGuid().ToString();
             _subject = new SqlServerEventStorePersistence(config.Configuration["SqlServer:ConnectionString"], true, _tableName);

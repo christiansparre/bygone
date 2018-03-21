@@ -9,10 +9,7 @@ namespace Bygone.PersistenceTests
 {
     public abstract class EventStoreListStreamsTests : EventStoreTestBase
     {
-        protected EventStoreListStreamsTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
-        {
-
-        }
+        protected EventStoreListStreamsTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config) { }
 
         [Fact]
         public async Task should_list_streams()

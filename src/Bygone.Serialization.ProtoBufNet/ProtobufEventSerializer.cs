@@ -17,7 +17,7 @@ namespace Bygone.Serialization.ProtoBufNet
             _typeModel = TypeModel.Create();
 
             // Explicitly register metadata dictionary with protobuf
-            // otherwise the serializer is SLOW dealing with dictionaries
+            // otherwise the serializer appears SLOW dealing with the metadata dictionaries
             _typeModel.Add(typeof(Dictionary<string, string>), true);
         }
 
@@ -68,7 +68,5 @@ namespace Bygone.Serialization.ProtoBufNet
                 return (Dictionary<string, string>)_typeModel.Deserialize(stream, null, typeof(Dictionary<string, string>));
             }
         }
-
-
     }
 }
