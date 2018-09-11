@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,11 +23,43 @@ namespace Bygone.MongoDb
             {
                 throw new NotSupportedException("Only MongoDB version 4.0.0 and above is supported");
             }
+
+            _collection.Indexes.CreateOne(new CreateIndexModel<MongoDbEventDocument>(Builders<MongoDbEventDocument>.IndexKeys.Ascending(s => s.Stream).Ascending(s => s.EventNumber), new CreateIndexOptions { Background = false, Unique = true }));
         }
 
-        public Task Append(string stream, SerializedEvent[] events)
+        public async Task Append(string stream, SerializedEvent[] events)
         {
-            throw new NotImplementedException();
+            var mongoDbEventDocuments = events.Select(s => new MongoDbEventDocument
+            {
+                Stream = stream,
+                EventNumber = s.EventNumber,
+                EventType = s.EventType,
+                Timestamp = s.TimestampTicks,
+                Event = s.Event,
+                Metadata = s.Metadata
+            }).ToList();
+
+            using (var session = await _collection.Database.Client.StartSessionAsync())
+            {
+                session.StartTransaction();
+
+                try
+                {
+                    await _collection.InsertManyAsync(session, mongoDbEventDocuments);
+                    await session.CommitTransactionAsync();
+                }
+                catch (Exception ex)
+                {
+                    await session.AbortTransactionAsync();
+
+                    if (ex is MongoCommandException mex && mex.Code == 11000)
+                    {
+                        throw new DuplicateEventException(stream, events.Select(s=>s.EventNumber).ToArray(), mex);
+                    }
+                    
+                    throw;
+                }
+            }
         }
 
         public Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)

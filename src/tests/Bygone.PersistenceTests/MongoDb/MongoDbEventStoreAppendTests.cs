@@ -5,11 +5,14 @@ using Xunit.Abstractions;
 
 namespace Bygone.PersistenceTests.MongoDb
 {
-    public class MongoDbEventStoreAppedTests : EventStoreAppendTests
+    //  docker run -i -p 37017:27017 --rm mongo:4 --replSet test
+    //  rs.initiate() in shell
+
+    public class MongoDbEventStoreAppendTests : EventStoreAppendTests
     {
         private readonly string _collectionName;
 
-        public MongoDbEventStoreAppedTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
+        public MongoDbEventStoreAppendTests(ITestOutputHelper testOutputHelper, TestConfiguration config) : base(testOutputHelper, config)
         {
             _collectionName = Guid.NewGuid().ToString();
             Subject = new EventStore(Serializer, new MongoDbEventStorePersistence(config.Configuration["MongoDb:ConnectionString"]));
