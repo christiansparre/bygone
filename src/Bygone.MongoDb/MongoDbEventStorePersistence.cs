@@ -54,28 +54,50 @@ namespace Bygone.MongoDb
 
                     if (ex is MongoCommandException mex && mex.Code == 11000)
                     {
-                        throw new DuplicateEventException(stream, events.Select(s=>s.EventNumber).ToArray(), mex);
+                        throw new DuplicateEventException(stream, events.Select(s => s.EventNumber).ToArray(), mex);
                     }
-                    
+
                     throw;
                 }
             }
         }
 
-        public Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)
+        public async Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)
         {
-            throw new NotImplementedException();
+            var mongoDbEventDocuments = await _collection
+                .Find(f => f.Stream == stream
+                           && f.EventNumber >= firstEventNumber
+                           && f.EventNumber <= lastEventNumber)
+                .SortBy(s => s.EventNumber)
+                .ToListAsync();
+
+            return mongoDbEventDocuments.Select(s =>
+                new SerializedEvent(
+                    s.EventNumber,
+                    s.Timestamp,
+                    s.EventType, s.Event, s.Metadata
+                )).ToArray();
         }
 
-        public Task<int> Delete(string stream)
+        public async Task<int> Delete(string stream)
         {
-            throw new NotImplementedException();
+            var deleteResult = await _collection.DeleteManyAsync(Builders<MongoDbEventDocument>.Filter.Eq(s => s.Stream, stream));
+
+            return (int)deleteResult.DeletedCount;
         }
 
-        public Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0,
+        public async Task<SerializedStreamInfo[]> List(int skip = 0, int take = 1000, long createdOnOrAfterTimestampTicks = 0,
             bool ascendingByTimestampTicks = true)
         {
-            throw new NotImplementedException();
+            var result = await _collection
+                   .Find(f => f.Timestamp >= createdOnOrAfterTimestampTicks && f.EventNumber == 1)
+                   .Sort(ascendingByTimestampTicks
+                       ? Builders<MongoDbEventDocument>.Sort.Ascending(a => a.Timestamp)
+                       : Builders<MongoDbEventDocument>.Sort.Descending(a => a.Timestamp))
+                   .Project(p => new { p.Stream, p.Timestamp })
+                   .ToListAsync();
+
+            return result.Select(s => new SerializedStreamInfo(s.Stream, s.Timestamp)).ToArray();
         }
     }
 }
