@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Bygone.MongoDb\Bygone.MongoDb.csproj" />
     <ProjectReference Include="..\..\Bygone.Serialization.ProtoBufNet\Bygone.Serialization.ProtoBufNet.csproj" />
     <ProjectReference Include="..\..\Bygone.SqlServer\Bygone.SqlServer.csproj" />
     <ProjectReference Include="..\..\Bygone\Bygone.csproj" />
