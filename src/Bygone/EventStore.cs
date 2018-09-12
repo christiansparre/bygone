@@ -64,7 +64,7 @@ namespace Bygone
                     r.EventNumber,
                     new DateTime(r.TimestampTicks, DateTimeKind.Utc),
                     _serializer.DeserializeEvent(eventType, r.Event),
-                   r.Metadata.Length == 0 ? null : _serializer.DeserializeMetadata(r.Metadata));
+                   r.Metadata?.Length == 0 ? null : _serializer.DeserializeMetadata(r.Metadata));
 
             }
 

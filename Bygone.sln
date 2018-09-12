@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bygone.PersistenceTests", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bygone.Serialization.ProtoBufNet", "src\Bygone.Serialization.ProtoBufNet\Bygone.Serialization.ProtoBufNet.csproj", "{A0DB0BC5-B528-4154-9A2F-B41F4CE792EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bygone.RavenDb", "src\Bygone.RavenDb\Bygone.RavenDb.csproj", "{8FA0C7E7-DDB7-420A-B9EA-3A297341243D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{A0DB0BC5-B528-4154-9A2F-B41F4CE792EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0DB0BC5-B528-4154-9A2F-B41F4CE792EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0DB0BC5-B528-4154-9A2F-B41F4CE792EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA0C7E7-DDB7-420A-B9EA-3A297341243D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA0C7E7-DDB7-420A-B9EA-3A297341243D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA0C7E7-DDB7-420A-B9EA-3A297341243D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA0C7E7-DDB7-420A-B9EA-3A297341243D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,6 +60,7 @@ Global
 		{93EAF038-6909-438B-8473-00E257B69E4B} = {19722998-2BA3-4458-AE7C-640AD5F61A6B}
 		{F6D92B1E-E8EF-464E-A24B-8236F006F2A5} = {2355BABB-7EE4-4DDD-8BE1-885C76833479}
 		{A0DB0BC5-B528-4154-9A2F-B41F4CE792EC} = {19722998-2BA3-4458-AE7C-640AD5F61A6B}
+		{8FA0C7E7-DDB7-420A-B9EA-3A297341243D} = {19722998-2BA3-4458-AE7C-640AD5F61A6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E3DE11E-FF40-4F9B-8F0E-9EAF78D53F94}

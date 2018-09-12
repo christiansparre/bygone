@@ -63,6 +63,11 @@ namespace Bygone.Serialization.ProtoBufNet
 
         public override Dictionary<string, string> DeserializeMetadata(byte[] metadata)
         {
+            if (metadata == null)
+            {
+                return null;
+            }
+
             using (var stream = new MemoryStream(metadata))
             {
                 return (Dictionary<string, string>)_typeModel.Deserialize(stream, null, typeof(Dictionary<string, string>));
