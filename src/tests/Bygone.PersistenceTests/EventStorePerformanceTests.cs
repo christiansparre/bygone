@@ -95,9 +95,9 @@ namespace Bygone.PersistenceTests
 
         [Theory]
         [InlineData(100, 10, 10)]
-        [InlineData(1000, 500, 500)]
-        [InlineData(5000, 2000, 3000)]
-        [InlineData(5000, 2000, 3000, false)]
+        //[InlineData(1000, 500, 500)]
+        //[InlineData(5000, 2000, 3000)]
+        //[InlineData(5000, 2000, 3000, false)]
         public async Task list_performance(int count, int skip, int take, bool ascending = true)
         {
             var tasks = new List<Task>();

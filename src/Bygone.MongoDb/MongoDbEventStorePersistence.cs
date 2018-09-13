@@ -3,12 +3,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Polly;
+using Polly.Retry;
 
 namespace Bygone.MongoDb
 {
     public class MongoDbEventStorePersistence : IEventStorePersistence
     {
-        private IMongoCollection<MongoDbEventDocument> _collection;
+        private readonly IMongoCollection<MongoDbEventDocument> _collection;
+        private readonly RetryPolicy _appendRetryPolicy;
 
         public MongoDbEventStorePersistence(string connectionString, string eventsCollectionName = "events")
         {
@@ -25,6 +28,9 @@ namespace Bygone.MongoDb
             }
 
             _collection.Indexes.CreateOne(new CreateIndexModel<MongoDbEventDocument>(Builders<MongoDbEventDocument>.IndexKeys.Ascending(s => s.Stream).Ascending(s => s.EventNumber), new CreateIndexOptions { Background = false, Unique = true }));
+
+            _appendRetryPolicy = Policy.Handle<MongoCommandException>(e => e.Code == 24)
+                .WaitAndRetryAsync(5, i => TimeSpan.FromMilliseconds(5));
         }
 
         public async Task Append(string stream, SerializedEvent[] events)
@@ -39,27 +45,24 @@ namespace Bygone.MongoDb
                 Metadata = s.Metadata
             }).ToList();
 
-            using (var session = await _collection.Database.Client.StartSessionAsync())
+            await _appendRetryPolicy.ExecuteAsync(async () =>
             {
-                session.StartTransaction();
-
-                try
+                using (var session = await _collection.Database.Client.StartSessionAsync())
                 {
-                    await _collection.InsertManyAsync(session, mongoDbEventDocuments);
-                    await session.CommitTransactionAsync();
-                }
-                catch (Exception ex)
-                {
-                    await session.AbortTransactionAsync();
+                    session.StartTransaction();
 
-                    if (ex is MongoCommandException mex && mex.Code == 11000)
+                    try
                     {
-                        throw new DuplicateEventException(stream, events.Select(s => s.EventNumber).ToArray(), mex);
+                        await _collection.InsertManyAsync(session, mongoDbEventDocuments);
+                        await session.CommitTransactionAsync();
                     }
-
-                    throw;
+                    catch (MongoCommandException ex) when (ex.Code == 11000)
+                    {
+                        await session.AbortTransactionAsync();
+                        throw new DuplicateEventException(stream, events.Select(s => s.EventNumber).ToArray(), ex);
+                    }
                 }
-            }
+            });
         }
 
         public async Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)
@@ -90,12 +93,14 @@ namespace Bygone.MongoDb
             bool ascendingByTimestampTicks = true)
         {
             var result = await _collection
-                   .Find(f => f.Timestamp >= createdOnOrAfterTimestampTicks && f.EventNumber == 1)
-                   .Sort(ascendingByTimestampTicks
+                .Find(f => f.Timestamp >= createdOnOrAfterTimestampTicks && f.EventNumber == 1)
+                .Sort(ascendingByTimestampTicks
                        ? Builders<MongoDbEventDocument>.Sort.Ascending(a => a.Timestamp)
                        : Builders<MongoDbEventDocument>.Sort.Descending(a => a.Timestamp))
-                   .Project(p => new { p.Stream, p.Timestamp })
-                   .ToListAsync();
+                .Skip(skip)
+                .Limit(take)
+                .Project(p => new { p.Stream, p.Timestamp })
+                .ToListAsync();
 
             return result.Select(s => new SerializedStreamInfo(s.Stream, s.Timestamp)).ToArray();
         }

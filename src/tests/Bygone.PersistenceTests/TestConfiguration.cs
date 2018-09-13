@@ -1,6 +1,9 @@
 using System.Data.SqlClient;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Xunit;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Bygone.PersistenceTests
 {

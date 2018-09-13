@@ -22,12 +22,12 @@ namespace Bygone.PersistenceTests.MongoDb
         protected override void OnDispose()
         {
             var mongoUrl = new MongoUrl(GetConnectionString());
-            new MongoClient(mongoUrl).DropDatabase(mongoUrl.DatabaseName);
+            new MongoClient(mongoUrl).GetDatabase(mongoUrl.DatabaseName).DropCollection(_collectionName);
         }
 
         private string GetConnectionString()
         {
-            return Config.Configuration["MongoDb:ConnectionString"].Replace("/Bygone-Tests", "/" + Guid.NewGuid());
+            return Config.Configuration["MongoDb:ConnectionString"];
         }
     }
 }
