@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,26 +71,33 @@ namespace Bygone.SqlServer
             {
                 await conn.OpenAsync();
 
+                var dt = new DataTable();
+                dt.Columns.AddRange(new[]{
+                    new DataColumn("Id",typeof(Guid)),
+                    new DataColumn("Stream",typeof(string)),
+                    new DataColumn("EventNumber",typeof(int)),
+                    new DataColumn("EventType",typeof(string)),
+                    new DataColumn("Timestamp",typeof(long)),
+                    new DataColumn("Event",typeof(byte[])),
+                    new DataColumn("Metadata",typeof(byte[]))
+                });
+
+                foreach (var e in events)
+                {
+                    dt.Rows.Add(Guid.NewGuid(), stream, e.EventNumber, e.EventType, e.TimestampTicks, e.Event, e.Metadata);
+                }
+
                 var transaction = conn.BeginTransaction();
 
                 try
                 {
-                    foreach (var e in events)
+                    var bc = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction)
                     {
-                        var cmd = conn.CreateCommand();
-                        cmd.Transaction = transaction;
-                        cmd.CommandText = $"INSERT INTO [{_eventsTableName}] (Id,Stream,EventNumber,EventType,Timestamp,Event,Metadata) VALUES (@Id,@Stream,@EventNumber,@EventType,@Timestamp,@Event,@Metadata)";
+                        DestinationTableName = $"[{_eventsTableName}]",
+                        BatchSize = 10000
+                    };
 
-                        cmd.Parameters.Add(new SqlParameter("Id", Guid.NewGuid()));
-                        cmd.Parameters.Add(new SqlParameter("Stream", stream));
-                        cmd.Parameters.Add(new SqlParameter("EventNumber", e.EventNumber));
-                        cmd.Parameters.Add(new SqlParameter("EventType", e.EventType));
-                        cmd.Parameters.Add(new SqlParameter("Timestamp", e.TimestampTicks));
-                        cmd.Parameters.Add(new SqlParameter("Event", e.Event));
-                        cmd.Parameters.Add(new SqlParameter("Metadata", e.Metadata));
-
-                        await cmd.ExecuteNonQueryAsync();
-                    }
+                    await bc.WriteToServerAsync(dt);
 
                     transaction.Commit();
                 }
@@ -108,8 +116,56 @@ namespace Bygone.SqlServer
                 {
                     transaction.Dispose();
                 }
+
             }
         }
+
+        //public async Task Append(string stream, SerializedEvent[] events)
+        //{
+        //    using (var conn = new SqlConnection(_connectionString))
+        //    {
+        //        await conn.OpenAsync();
+
+        //        var transaction = conn.BeginTransaction();
+
+        //        try
+        //        {
+        //            foreach (var e in events)
+        //            {
+        //                var cmd = conn.CreateCommand();
+        //                cmd.Transaction = transaction;
+        //                cmd.CommandText = $"INSERT INTO [{_eventsTableName}] (Id,Stream,EventNumber,EventType,Timestamp,Event,Metadata) VALUES (@Id,@Stream,@EventNumber,@EventType,@Timestamp,@Event,@Metadata)";
+
+        //                cmd.Parameters.Add(new SqlParameter("Id", Guid.NewGuid()));
+        //                cmd.Parameters.Add(new SqlParameter("Stream", stream));
+        //                cmd.Parameters.Add(new SqlParameter("EventNumber", e.EventNumber));
+        //                cmd.Parameters.Add(new SqlParameter("EventType", e.EventType));
+        //                cmd.Parameters.Add(new SqlParameter("Timestamp", e.TimestampTicks));
+        //                cmd.Parameters.Add(new SqlParameter("Event", e.Event));
+        //                cmd.Parameters.Add(new SqlParameter("Metadata", e.Metadata));
+
+        //                await cmd.ExecuteNonQueryAsync();
+        //            }
+
+        //            transaction.Commit();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            transaction.Rollback();
+
+        //            if (ex is SqlException ex2 && ex2.Number == 2601)
+        //            {
+        //                throw new DuplicateEventException(stream, events.Select(s => s.EventNumber).ToArray(), ex);
+        //            }
+
+        //            throw;
+        //        }
+        //        finally
+        //        {
+        //            transaction.Dispose();
+        //        }
+        //    }
+        //}
 
         public async Task<SerializedEvent[]> Read(string stream, int firstEventNumber, int lastEventNumber)
         {
