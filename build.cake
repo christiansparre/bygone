@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var target = Argument<string>("target", "Default");
-var version = Argument<string>("buildversion", "0.1.0-alpha");
+var version = Argument<string>("buildversion", "1.0.0-alpha");
 var configuration = Argument<string>("configuration", "Release");
 var platform = PlatformTarget.MSIL;
 
